@@ -1,4 +1,6 @@
+---
+title: "RStudio Exercise1"
+author: "Marja Holm"
+---
+This course *Open Data Science* requires several skills from statisticians and other data scientists. In this course we will learn to code, recode, program, visualize, analyze, and interpret.
 
-# About the project
-
-*Write a short description about the course and add a link to your github repository here. This is an R markdown (.Rmd) file so you can use R markdown syntax. See the 'Useful links' page in the mooc area (chapter 1) for instructions.*

@@ -1,0 +1,8 @@
+---
+title: "Open Data Science"
+author: "Marja Holm"
+date: "26 tammikuuta 2017"
+output: html_document
+---
+
+In this course we learn to use R, Rmarkdown, and github.  Here is a link to my course diary <https://marjaholm.github.io/IODS-project/>.
