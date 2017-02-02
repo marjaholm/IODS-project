@@ -1,7 +1,139 @@
-# Insert chapter 2 title here
+##The Analysis, Marja Holm
 
-*Describe the work you have done this week and summarize your learning.*
+**1.Read the students2014 data into R either from your local folder or from this url. Explore the structure and the dimensions of the data and describe the dataset briefly, assuming the reader has no previous knowledge of it.**
+```{r}
+#Read thedata into R from the url
+lrn14 <- read.csv("http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/learning2014.txt")
+#the structure of the data
+str(lrn14)
+#the dimensions of the data
+dim(lrn14)
+```
+**Description of the data**
 
-- Describe your work and results clearly. 
-- Assume the reader has an introductory course level understanding of writing and reading R code as well as statistical methods
-- Assume the reader has no previous knowledge of your data or the more advanced methods you are using  
+- This data consists of 166 observations and 7 variables (gender, age, attitude, deep, stra, surf, points).
+
+- Gender is factor variable; age, attitude and points are integer variables;and deep, stra and surf are numeric variables.
+
+**Note also that**
+
+- gender: M (Male), F (Female) 
+
+- age (in years) was derived from the date of birth
+
+- attitude = global attitude toward statistics
+
+- deep = deep learning, e.g., "I usually set out to understand for myself the meaning of what we have to learn (D03)""
+
+- stra = strategy learning, e.g.,  "I organize my study time carefully to make the best use of it (ST04)"
+
+- surf = surface learning, e.g., "I find I have to concentrate on just memorising a good deal of what I have to learn (SU05)"
+
+
+**2.Show a graphical overview of the data and show summaries of the variables in the data. Describe and interpret the outputs, commenting on the distributions of the variables and the relationships between them.** 
+
+**2.1. A scatter plot matrix of the variables**
+```{r}
+# draw a scatter plot matrix of the variables.
+pairs(lrn14)
+```
+
+**2.2. More advanced plot**
+
+```{r}
+# access the GGally and ggplot2 libraries
+library(GGally)
+library(ggplot2)
+
+# a more advanced plot matrix with ggpairs()
+p <- ggpairs(lrn14, mapping = aes(), lower = list(combo = wrap("facethist", bins = 20)))
+
+# draw the plot
+p
+```
+
+**2.3. Describe and interpret the outputs, commenting on the distributions of the variables and the relationships between them:**
+
+**Distributions**
+
+* There were more female students than male students. 
+
+* As both figure showed the distribution of age variable is positioned around the age of 20 and participants aged over 30 years is limited. The distribution is highly skewed to the left.
+
+* The distribution of the attitude variable is quite normal and data is positioned around 3 (likert scale 0-5). 
+
+* The distribution of the deep variable is quite normal (slightly skewed to the right) and data is positioned around 3.5 (likert scale 0-5). 
+
+* The distribution of the stra variable is quite normal  and data is  distributed  around 3 (likert scale 0-5). 
+
+* The distribution of the surf variable is quite normal (slightly skewed to the left) and data is positioned around 2.5 (likert scale 0-5).
+
+* The distribution of the points variable is quite normal (slightly skewed to the right) and data is positioned around 25.
+
+**Relationships:**
+
+* Correlations between age and attitude (r = .02), age and deep (r= .03), and age and points (r=-.09) were low, and correlations between age and stra (r=.10), and age and surf (r=-.14) are small but higher; indicating that when the age increases, the strategy learning increases (stra)  and the surface learning (surf) decreases. 
+
+* Correlation between attitude and exam points was quite high (r=.44): indicating that higher attitude toward statistics related to higher exam points. Correlation between attitude and surface learning was negative, but quite small (r=-.18); indicating that higher attitude toward statistics related to lower levels of the surface learning. Other correlations were low (between attitude and stra (r=.06) and attitude and deep (r=.11))
+
+* Correlation between deep and surf was quite high (r=-.32); indicating that that higher deep learning level related to lower surface learning level. In fact, I would have assumed a higher level of correlation; perhaps students use both ways to  learn. Correlations between deep and points (r=-.01) and deep and stra (r=.096)  were low. 
+
+* Correlations between stra and surf (r=-.16) and stra and points (r=.15) were quite low; indicating that higher strategy learning related lower surface learning and higher strategy learning higher exam points. 
+
+* Furthermore, there was small negative correlation between surf and points (r=-.14); indicating that higher surface learning related lower exam points.  
+
+**3. Choose three variables as explanatory variables and fit a regression model where exam points is the target (dependent) variable. Show a summary of the fitted model and comment and interpret the results. Explain and interpret the statistical test related to the model parameters. If an explanatory variable in your model does not have a statistically significant relationship with the target variable, remove the variable from the model and fit the model again without it.**
+
+```{r}
+# create a regression model with multiple explanatory variables
+my_model <- lm(points ~ attitude + stra + surf, data = lrn14)
+# print out a summary of the model
+summary(my_model)
+
+```
+**Interpret the results. Explain and interpret the statistical test related to the model parameters.**
+
+* Residuals: model is created in such a way that it minimizes the sum of the squared residuals, which are the prediction errors (y2-y, y2=predictions, y=actual variable))
+
+* Estimate Std described = beeta: The main point is estimate the beeta parameters. Only attitude explained significantly (beeta=3.40, p=.003) exam points; indicating that when attitude change by one unit, the average change in exam points is 3.40 points. 
+
+* In other words, statistic t-test indicated that there is some statistically significant relationship between exam points and attitude. More specially, hypothesis H0: beeta=0 is rejected, implying that a model does exist between x and y.
+
+* On the other hand, variables stra (strategy learning) (beeta=0.85, p=0.11) and surf (surface learning) (beeta=-0.59, p=.47) did not explained significantly exam points, as the statistic t-tests are not significant levels.
+
+* Note that Std. Error= standardized error (highest for surface learning). It represents the average distance that the observed values fall from the regression line. Conveniently, it tells you how wrong the regression model is on average using the units of the response variable. As values were quite small it indicates that the observations are quite close to the fitted line.
+
+**If an explanatory variable in your model does not have a statistically significant relationship with the target variable, remove the variable from the model and fit the model again without it.**
+
+Now,  we remove variables stra and surf:
+```{r}
+# create a regression model with multiple explanatory variables
+my_model2 <- lm(points ~ attitude, data = lrn14)
+# print out a summary of the model
+summary(my_model2)
+
+```
+**4. Using a summary of your fitted model, explain the relationship between the chosen explanatory variables and the target variable (interpret the model parameters). Explain and interpret the multiple R squared of the model.**
+
+As we mentioned earlier, the relationship between the exam points and attitude was significant (beeta=3.53, p<.001); indicating that when attitude change by one unit, the average change in exam points is 3.53 points. Note that we look now the model where the nonsignificant variables were removed. The multiple R-squared was R^2^=.19;  indicating that attitude explained 19% of  the variance in exam points.
+
+**5. Produce the following diagnostic plots: Residuals vs Fitted values, Normal QQ-plot and Residuals vs Leverage. Explain the assumptions of the model and interpret the validity of those assumptions based on the diagnostic plots.**
+
+Noted that only significant explanatory variable attitude was included in the model.
+```{r}
+# draw diagnostic plots using the plot() function. Choose the plots 1, 2 and 5
+par(mfrow = c(2,2))
+plot(my_model2, which = c(1:2, 5))
+```
+
+**Explain the assumptions of the model and interpret the validity of those assumptions based on the diagnostic plots.**
+
+* The assumption that the size of a given error does not depend on the explanatory variables can be explored with a simple scatter plot of residuals versus model predictions (figure 1). As we can see, there is reasonable random spread and not any patter; indicating that this assumption is realized.
+
+ 
+* QQ-plot of the residuals (figure 2) provides a method to explore the assumption that the errors of the model are normally distributed. As the plots were quite near on the line (fit on the line), the assumption of the normality is realized.
+
+
+* We also need to investigate problematic  observations such as outliers. Leverage measures how much impact a single observation has on the model. In the figure 3, residuals vs. leverage plot can help identify which observations have an unusually high impact. As no single observations does not arise (e.g., outliers), none of the single observations does not have a great impact on the model. However, perhaps items such as 71, 56, and 35 should be looked more deeply, and investigate whether their removal would impact on the model.
+
+
