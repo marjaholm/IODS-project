@@ -1,0 +1,523 @@
+---
+title: "chapter3"
+author: "Marja Holm"
+date: "8 helmikuuta 2017"
+output: html_document
+---
+**2. Read the joined student alcohol consumption data into R either from your local folder or from the url. Print out the names of the variables in the data and describe the data set briefly, assuming the reader has no previous knowledge of it. **
+```{r}
+alc <- read.table("http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/alc.txt", sep = "," , header=TRUE)
+
+#the structure of the data
+str(alc)
+#the dimensions of the data
+dim(alc)
+```
+**Describe the data set briefly, assuming the reader has no previous knowledge of it.**
+
+This data consists of 382 observations and 35 variables.
+
+*Factor variables:* 
+
+1. school: student's school (binary: 'GP' - Gabriel Pereira or 'MS' - Mousinho da Silveira) 
+2. sex: student's sex (binary: 'F' - female or 'M' - male)
+3. adress: student's home address type (binary: 'U' - urban or 'R' - rural) 
+4. famsize: family size (binary: 'LE3' - less or equal to 3 or 'GT3' - greater than 3)
+5. Pstatus: parent's cohabitation status (binary: 'T' - living together or 'A' - apart) 
+6. Mjob: mother's job (nominal, 'teacher', 'health' care related, civil 'services', 'at_home' or 'other') 
+7. Fjob: father's job (nominal, 'teacher', 'health' care related, civil 'services', 'at_home' or 'other')
+8. reason: reason to choose this school (nominal: close to 'home', school 'reputation', 'course' preference or 'other') 
+9. nursery:attended nursery school (binary: yes or no) 
+10. internet:Internet access at home (binary: yes or no) 
+11. guardian: student's guardian (nominal: 'mother', 'father' or 'other') 
+12. schoolsup:extra educational support (binary: yes or no) 
+13. famsup: family educational support (binary: yes or no) 
+14. paid:extra paid classes within the course subject (Math or Portuguese) (binary: yes or no) 
+15. activities:extra-curricular activities (binary: yes or no) 
+16. higher:wants to take higher education (binary: yes or no) 
+17. romantic:with a romantic relationship (binary: yes or no) 
+
+*Integer variables:* 
+
+18. age: student's age (numeric: from 15 to 22) 
+19. Medu: mother's education (numeric: 0-none, 1-primary, 3-secondary or 4-higher) 
+20. Fedu: father's education (numeric: 0-none, 1-primary, 3-secondary or 4-higher) 
+21. traveltime: home to school travel time (numeric: 1 - <15 min., 2 - 15 to 30 min., 3 - 30 min. to 1 hour, or 4 - >1 hour) 
+22. studytime: weekly study time (numeric: 1 - <2 hours, 2 - 2 to 5 hours, 3 - 5 to 10 hours, or 4 - >10 hours) 
+23. failures: number of past class failures (numeric: n if 1<=n<3, else 4)
+24. famrel: quality of family relationships (numeric: from 1 - very bad to 5 - excellent) 
+25. freetime: free time after school (numeric: from 1 - very low to 5 - very high) 
+26. goout: going out with friends (numeric: from 1 - very low to 5 - very high) 
+27. Dalc: workday alcohol consumption (numeric: from 1 - very low to 5 - very high) 
+28. Walc: weekend alcohol consumption (numeric: from 1 - very low to 5 - very high) 
+29. health: current health status (numeric: from 1 - very bad to 5 - very good) 
+30. absences: number of school absences (numeric: from 0 to 93) 
+31. G1: first period grade (numeric: from 0 to 20) 
+32. G2: second period grade (numeric: from 0 to 20) 
+33. G3: final grade (numeric: from 0 to 20, output target) 
+
+*Numeric:*
+
+34. alc_use: average of weekday and weekend alcohol use 
+
+*Logical:*
+
+35. high_use: TRUE if 'alc_use' is higher than 2 and FALSE otherwise
+
+**3. The purpose of your analysis is to study the relationships between high/low alcohol consumption and some of the other variables in the data. To do this, choose 4 interesting variables in the data and for each of them, present your personal hypothesis about their relationships with alcohol consumption.**
+
+We selected variables that might have relationships with alcohol consumption.
+
+H1. Going out with friends (goout) might have a positive association with alcohol consumption (alc_use).
+
+H2. Weekly study time (studytime) might have a negative association with alcohol consumption (alc_use).
+
+H3. Students' age (age: 15 to 20) might have a positive association with alcohol consumption (alc_use); indicating that older students might have more alcohol consumption than younger ones .
+
+H4. Number of past class failures (failures) might have a positive association with alcohol consumption (alc_use).
+
+**4. Numerically and graphically explore the distributions of your chosen variables and their relationships with alcohol consumption (use for example cross-tabulations, bar plots and box plots). Comment on your findings and compare the results of your exploration to your previously stated hypotheses.**
+
+First, the data (named: dta) including only study variables (goout, studytime, age, failures, alc_use, high_use) were created.
+
+```{r}
+#Access the dplyr library
+library(dplyr)
+#Choosing what columns are kept for analysis dataset
+keep_columns<-c("goout","studytime","age", "failures", "alc_use", "high_use")
+```
+
+```{r}
+#Access the dplyr library
+library(dplyr)
+#Creating analysis dataset that includes these variables
+dta <- select(alc, one_of(keep_columns))
+str(dta)
+#Saving the R.file into scv format. Before this the working directory has been changed to IODS-project and under Data folder.
+write.table(dta, file="dta.csv")
+ dta<-read.table("dta.csv")        
+```
+
+**4.1. Numerically and graphically explore the distributions of your chosen variables and their relationships with alcohol consumption**
+
+
+```{r}
+# access the GGally and ggplot2 libraries
+library(GGally)
+library(ggplot2)
+
+# a more advanced plot matrix with ggpairs()
+p <- ggpairs(dta,  mapping = aes(),lower = list(combo = wrap("facethist", bins = 20)))
+
+# draw the plot
+p
+```
+
+*Figure 1. Correlations and distributions* 
+
+```{r}
+ta0<-xtabs(~alc_use+goout, data=dta)
+ta0
+```
+*Table1. Cross-tabulations: Relationships between alcohol use (alc_use) and going out with friends (goout)*
+
+```{r}
+ta1<-xtabs(~alc_use+studytime, data=dta)
+ta1
+```
+*Table 2. Cross-tabulations: relationships between alcohol use (alc_use) and weekly study time (studytime)*
+
+
+```{r}
+ta2<-xtabs(~alc_use+age, data=dta)
+ta2
+```
+*Table 3. Cross-tabulations: relationships between alcohol use (alc_use) and age*
+
+
+```{r}
+ta3<-xtabs(~alc_use+failures, data=dta)
+ta3
+```
+*Table 4. Cross-tabulations: relationships between alcohol use and number of past class failures (failures)*
+
+```{r}
+library(ggplot2)
+
+alc$alc_use<-as.factor(alc$alc_use)
+# initialise a plot of high_use and absences
+g2 <- ggplot(alc, aes(x = alc_use, y = goout))
+
+# define the plot as a boxplot and draw it
+g2 + geom_boxplot() + ylab("goout")+aes(col=alc_use)+ggtitle("Going out with friends by alcohol use")
+```
+
+*Figure 2. Box plots I*
+
+```{r}
+library(ggplot2)
+
+alc$alc_use<-as.factor(alc$alc_use)
+# initialise a plot of high_use and absences
+g2 <- ggplot(alc, aes(x = alc_use, y = studytime))
+
+# define the plot as a boxplot and draw it
+g2 + geom_boxplot() + ylab("studytime")+aes(col=alc_use)+ggtitle("Students' weekly study time by alcohol use")
+```
+
+*Figure 3. Box plots II*
+
+```{r}
+library(ggplot2)
+
+alc$alc_use<-as.factor(alc$alc_use)
+# initialise a plot of high_use and absences
+g2 <- ggplot(alc, aes(x = alc_use, y = age))
+
+# define the plot as a boxplot and draw it
+g2 + geom_boxplot() + ylab("age")+aes(col=alc_use)+ggtitle("Student age by alcohol use")
+```
+
+*Figure 4. Box plots III*
+
+```{r}
+library(ggplot2)
+
+alc$alc_use<-as.factor(alc$alc_use)
+# initialise a plot of high_use and absences
+g2 <- ggplot(alc, aes(x = alc_use, y = failures))
+
+# define the plot as a boxplot and draw it
+g2 + geom_boxplot() + ylab("failures")+aes(col=alc_use)+ggtitle("Number of past class failures by alcohol use")
+```
+
+*Figure 5. Box plots IV*
+
+
+**4.2. Comment on your findings and compare the results of your exploration to your previously stated hypotheses.**
+
+
+*Distributions*
+
+Figure 1 showed distributions of the variables: 
+
+- Distributions of goout showed that students often go out with friends on the middle level (3, 1=very low and 5=very high).
+
+- Distributions of studytime showed that students weekly study time was often 2 hours. 
+
+- Distributions of age indicated that students' age were often between 15 to 18 and only a few students aged between 18 to 20. 
+
+- Distributions of failures showed that students' number of past class failures often was 0. 
+
+Dependent variables
+
+- Distributions of alc_use showed that most of students showed that they weekday and weekend alcohol use was very low (1). 
+
+- Distributions of high_use showed that most of students showed lower than 2 alcohol use.
+
+*Relationship*
+
+The figure 1 also showed that our hypotheses were quite true. There were positive correlation between goout and alc_use (r=.388) (H1), negative correlation between studytime and alc_use (r=-.24) (H2), positive correlation between age and alc_use (r=.156) (H3), and positive correlation between failures and alc_use (r=.15) (H4). 
+
+However, cross-tabulations and box plots describe the relationship more deeply; showing that there are also a lot of variations.
+
+Table 1 and also figure 1 showed that most students going out about average (2 or 3) have quite low alcohol use, while most of those students going out very high level have also high alcohol use. 
+
+Table 2 and also figure 2 showed that most of those students studying 2 hours have quite low alcohol use. Noted also that most of those students using alcohol in high level often studied 1 or 2 hours, while often students studying over 2 hours have low alcohol use with a few exceptions. 
+
+Table 3 and also figure 3 showed that students aged around 16 often have low alcohol use, while age level are little bit higher (in average) if students used alcohol in higher level (see figure 4) with a few exceptions.  
+
+Table 4 and also figure 4 showed that students without failures often showed low alcohol use, but also high alcohol use with a few exceptions indicating this quite low correlation (r=.15).
+ 
+**5. Use logistic regression to statistically explore the relationship between your chosen variables and the binary high/low alcohol consumption variable as the target variable. Present and interpret a summary of the fitted model. Present and interpret the coefficients of the model as odds ratios and provide confidence intervals for them. Interpret the results and compare them to your previously stated hypothesis. **
+
+```{r}
+# find the model with glm()
+m <- glm(high_use ~ goout+ studytime+age+failures, data = dta, family = "binomial")
+
+# print out a summary of the model
+summary(m)
+```
+**Interpret a summary of the fitted model.**
+
+Below, you found summary of the fitted model. As the z-value are only significant (enough big) for goout and studytime, the corresponding variables only matters (the corresponding true regression coefficient is not 0). In the other words, only relationships between goout and high_use, and studytime and high_use are significant. 
+ 
+Noted also that that the standard errors of these four study variables were quite low (below 1); indicating that they are not too spread out.
+
+
+```{r}
+# print out the coefficients of the model
+coef(m)
+
+# compute odds ratios (OR)
+OR <- coef(m) %>% exp
+
+# compute confidence intervals (CI)
+CI<-exp(confint(m))
+
+# print out the odds ratios with their confidence intervals
+cbind(OR, CI)
+
+```
+
+**Interpret the coefficients of the model as odds ratios** 
+
+
+We only interpret the significant variables: 
+
+The odds ratios OR=2.03 for going out with friends was higher than one; indicating positive relationship. More student go out with friends, the more his/her alcohol use is at a high level (TRUE). In other words, if students go out with friends often, he/she have about 2 times likely to have high alcohol use. 
+
+The odds ratios OR=0.55 for studytime was lower than one; indicating negative relationship. Less student study, the more his/her alcohol use is at a high level (TRUE). In other words, if students studytime is low level, he/she have about 0.55 times likely to have high alcohol use.
+
+
+**compare them to your previously stated hypothesis.**
+
+Only hypothesis H1 (Going out with friends might have a positive association with alcohol consumption) and H2 (Weekly study time  might have a negative association with alcohol consumption) were evident when these four dependent variables were at the same logistic regression model (controlling the each other's effects).
+
+
+**6. Using the variables which, according to your logistic regression model, had a statistical relationship with high/low alcohol consumption, explore the predictive power of you model. Provide a 2x2 cross tabulation of predictions versus the actual values and optionally display a graphic visualizing both the actual values and the predictions. Compute the total proportion of inaccurately classified individuals (= the training error) and comment on all the results. Compare the performance of the model with performance achieved by some simple guessing strategy.**
+
+Noted that only variables that have significant relationship with high/low alcohol consumptions were left in the next model. 
+
+```{r}
+# fit the model
+m <- glm(high_use ~ goout + studytime, data = dta, family = "binomial")
+
+# predict() the probability of high_use
+probabilities <- predict(m, type = "response")
+
+# add the predicted probabilities to 'alc'
+dta <- mutate(dta, probability = probabilities)
+
+# use the probabilities to make a prediction of high_use
+dta <- mutate(dta, prediction = probability>0.5)
+
+# tabulate the target variable versus the predictions
+table(high_use = dta$high_use, prediction = dta$prediction)
+table(high_use = dta$high_use, prediction = dta$prediction) %>% prop.table() %>% addmargins()
+```
+
+Above you found probabilities of the target variables versus prediction. Indicating that our model with the two variables (goout and studytime) predicted correctly 65% of the FALSE values (low alcohol use) and 11% of the TRUE values (high-alcohol use). 
+
+
+**7. Bonus: Perform 10-fold cross-validation on your model. Does your model have better test set performance (smaller prediction error using 10-fold cross-validation) compared to the model introduced in DataCamp (which had about 0.26 error). Could you find such a model?**
+```{r}
+# define a loss function (average prediction error)
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+# compute the average number of wrong predictions in the (training) data
+loss_func(dta$high_use, dta$probability)
+
+# K-fold cross-validation
+library(boot)
+cv <- cv.glm(data = dta, cost = loss_func, glmfit = m, K = 10)
+
+# average number of wrong predictions in the cross validation
+cv$delta[1]
+```
+
+Above you found the 10-fold cross-validation syntax and error  as output. The data is divided into subsets 10 times and eventually all the data is used for both training and testing.  
+
+
+My model has about 0.24 training and testing errors, and thus my model is better than the model introduced in DataCamp (which had about 0.26 error)
+
+**8. Super-Bonus: Perform cross-validation to compare the performance of different logistic regression models (= different sets of predictors). Start with a very high number of predictors and explore the changes in the training and testing errors as you move to models with less predictors. Draw a graph displaying the trends of both training and testing errors by the number of predictors in the model.**
+
+**MODEL1**
+
+First model with very high number of predictors
+
+```{r}
+# fit the model
+m <- glm(high_use ~ school+ age+ failures + absences + sex+internet+schoolsup+famsup+paid+activities+higher+romantic+Medu+Fedu+traveltime+studytime+famrel+freetime+goout+health+G1+G2+G3, data = alc, family = "binomial")
+
+# print out a summary of the model
+summary(m)
+
+# print out the coefficients of the model
+coef(m)
+
+# predict() the probability of high_use
+probabilities <- predict(m, type = "response")
+
+# add the predicted probabilities to 'alc'
+alc <- mutate(alc, probability = probabilities)
+
+# use the probabilities to make a prediction of high_use
+alc <- mutate(alc, prediction = probability>0.5)
+
+# tabulate the target variable versus the predictions
+table(high_use = alc$high_use, prediction = alc$prediction)
+
+
+# define a loss function (average prediction error)
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+# compute the average number of wrong predictions in the (training) data
+loss_func(alc$high_use, alc$probability)
+
+# K-fold cross-validation
+library(boot)
+cv <- cv.glm(data = alc, cost = loss_func, glmfit = m, K = 10)
+
+# average number of wrong predictions in the cross validation
+cv$delta[1]
+```
+As the training and testing error in MODEL1 are lower than our first study model with the four independent variables (training=testing error=0.241), we are moving forward.
+
+**MODEL2**
+
+In this second model, only significant variables will be let in the model2: absences, sex, paid, activities, traveltime, famrel, goout, and G1.
+
+```{r}
+# fit the model
+m <- glm(high_use ~ absences + sex+paid+activities+traveltime+famrel+goout+G1, data = alc, family = "binomial")
+
+# print out a summary of the model
+summary(m)
+
+# print out the coefficients of the model
+coef(m)
+
+# predict() the probability of high_use
+probabilities <- predict(m, type = "response")
+
+# add the predicted probabilities to 'alc'
+alc <- mutate(alc, probability = probabilities)
+
+# use the probabilities to make a prediction of high_use
+alc <- mutate(alc, prediction = probability>0.5)
+
+# tabulate the target variable versus the predictions
+table(high_use = alc$high_use, prediction = alc$prediction)
+
+
+# define a loss function (average prediction error)
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+# compute the average number of wrong predictions in the (training) data
+loss_func(alc$high_use, alc$probability)
+
+# K-fold cross-validation
+library(boot)
+cv <- cv.glm(data = alc, cost = loss_func, glmfit = m, K = 10)
+
+# average number of wrong predictions in the cross validation
+cv$delta[1]
+```
+
+As the testing error in the MODEL2 is lower than in the MODEL1, we are moving forward.
+
+**MODEL3**
+
+Only significant will be let in the third model: absences, sex, paid, activities, traveltime, famrel, and goout.
+
+```{r}
+# fit the model
+m <- glm(high_use ~ absences + sex+paid+activities+traveltime+famrel+goout, data = alc, family = "binomial")
+
+# print out a summary of the model
+summary(m)
+
+# print out the coefficients of the model
+coef(m)
+
+# predict() the probability of high_use
+probabilities <- predict(m, type = "response")
+
+# add the predicted probabilities to 'alc'
+alc <- mutate(alc, probability = probabilities)
+
+# use the probabilities to make a prediction of high_use
+alc <- mutate(alc, prediction = probability>0.5)
+
+# tabulate the target variable versus the predictions
+table(high_use = alc$high_use, prediction = alc$prediction)
+
+
+# define a loss function (average prediction error)
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+# compute the average number of wrong predictions in the (training) data
+loss_func(alc$high_use, alc$probability)
+
+# K-fold cross-validation
+library(boot)
+cv <- cv.glm(data = alc, cost = loss_func, glmfit = m, K = 10)
+
+# average number of wrong predictions in the cross validation
+cv$delta[1]
+```
+As the training and testing error  in the MODEL3 are slightly lower than in the MODEL2, this MODEL3 might be better. 
+
+**MODEL4**
+
+As the all predictors were significant with the exeption of paid (p=0.10), we also tested the MODEL4 in which this paid variable was eliminated.
+
+```{r}
+# fit the model
+m <- glm(high_use ~ absences + sex+activities+traveltime+famrel+goout, data = alc, family = "binomial")
+
+# print out a summary of the model
+summary(m)
+
+# print out the coefficients of the model
+coef(m)
+
+# predict() the probability of high_use
+probabilities <- predict(m, type = "response")
+
+# add the predicted probabilities to 'alc'
+alc <- mutate(alc, probability = probabilities)
+
+# use the probabilities to make a prediction of high_use
+alc <- mutate(alc, prediction = probability>0.5)
+
+# tabulate the target variable versus the predictions
+table(high_use = alc$high_use, prediction = alc$prediction)
+
+
+# define a loss function (average prediction error)
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+# compute the average number of wrong predictions in the (training) data
+loss_func(alc$high_use, alc$probability)
+
+# K-fold cross-validation
+library(boot)
+cv <- cv.glm(data = alc, cost = loss_func, glmfit = m, K = 10)
+
+# average number of wrong predictions in the cross validation
+cv$delta[1]
+```
+
+As the training and testing error in the MODEL4 are higher than in the MODEL3, this MODEL3 might be one of the best model to describe the high alcohol use. In this model, absences (number of school absences), sex, paid (extra paid classes), activities (extra-curriculum activities), traveltime (home to school traveltime), famrel (quality of family relationships) and goout (going out of friends) describe high alcohol use. 
+
+
+**Draw a graph displaying the trends of both training and testing errors by the number of predictors in the model.**
+```{r}
+predictors<-c(23, 8, 7, 6)
+training_error<-c(0.186, 0.188, 0.186, 0.196)
+qplot(x=predictors, y=training_error)
+```
+```{r}
+predictors<-c(23, 8, 7, 6)
+testin_error<-c(0.230, 0.204, 0.199, 0.217)
+qplot(x=predictors, y=testin_error)
+```
+
