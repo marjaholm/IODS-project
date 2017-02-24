@@ -1,5 +1,5 @@
 
-**Exercise 3, Marja Holm, 10.2.2017**
+##RStudio Exercise 3, Marja Holm, Analysis exercises, 10.2.2017
 
 **2. Read the joined student alcohol consumption data into R either from your local folder or from the url. Print out the names of the variables in the data and describe the data set briefly, assuming the reader has no previous knowledge of it. **
 ```{r}
