@@ -1,0 +1,187 @@
+##RStudio Exercise 5, Marja Holm, Analysis exercises, 21.2.2017
+
+**1. Load the 'human' data into R. Explore the structure and the dimensions of the data and describe the dataset briefly, assuming the reader has no previous knowledge of it. **
+
+```{r}
+human<- read.csv("http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/human2.txt", sep=",", header=T)
+names(human)
+#the structure of the data
+str(human)
+#the dimensions of the data
+dim(human)
+```
+
+
+The data combines eight variables from most countries in the world:
+
+"Edu2.F" = Proportion of females with at least secondary education
+
+"Labo.F" = Proportion of females in the labour force
+
+"Edu.Exp" = Expected years of schooling 
+
+"Life.Exp" = Life expectancy at birth
+
+"GNI" = Gross National Income per capita
+
+"Mat.Mor" = Maternal mortality ratio
+
+"Ado.Birth" = Adolescent birth rate
+
+"Parli.F" = Percetange of female representatives in parliament
+
+**2. Show a graphical overview of the data and show summaries of the variables in the data. Describe and interpret the outputs, commenting on the distributions of the variables and the relationships between them.**
+
+
+
+```{r}
+
+library(GGally)
+library(dplyr)
+library(corrplot)
+# visualize the 'human_' variables
+ggpairs(human)
+
+# compute the correlation matrix and visualize it with corrplot
+cor(human)%>%corrplot()
+```
+
+*Distributions*
+
+Variables Edu2.FM and Edu.Exp are relatively close to the normal distribution.
+
+GNI, Mat.Mor, Ado.Birth, and Parli.F are highly or slightly skewed to the left.
+
+Labo.FM and Life.EXp are slightly skewed to the right.
+
+
+*Relationships*
+
+As correlation table and corrplot showed, there were quite high correlations (negative or positive) between variables, only variables: Parli.F (Percetange of female representatives in parliament) and Labo.FM (Proportion of females in the labour force) did not show significant correlation between other variables. For example,  there was high negative correlation between Mat. Mor and Life.Exp ( r= -.86). 
+
+**3. Perform principal component analysis (PCA) on the not standardized human data. Show the variability captured by the principal components. Draw a biplot displaying the observations by the first two principal components (PC1 coordinate in x-axis, PC2 coordinate in y-axis), along with arrows representing the original variables.**
+
+As PCA is sensitive to the relative scaling of the original features, standardization of the features before PCA is often a god idea. 
+
+
+```{r}
+# standardize the variables
+human_std <- scale(human)
+
+
+# perform principal component analysis (with the SVD method)
+pca_human <- prcomp(human_std)
+
+pca_human
+
+# draw a biplot of the principal component representation and the original variables
+biplot(pca_human, choices = 1:2, cex=c(0.8,1), col = c("grey40", "deeppink2"))
+
+# create and print out a summary of pca_human
+s <- summary(pca_human)
+s
+
+# rounded percetanges of variance captured by each PC
+pca_pr <- round(1*s$importance[2, ]*100, digits = 1)
+
+# print out the percentages of variance
+pca_pr
+
+# create object pc_lab to be used as axis labels
+pc_lab<-paste0(names(pca_pr), " (", pca_pr, "%)")
+
+# draw a biplot
+biplot(pca_human, cex = c(0.4, 0.6), col = c("grey40", "red"), xlab = pc_lab[1], ylab = pc_lab[2])
+
+
+
+```
+
+
+
+**5.Give your personal interpretations of the first two principal component dimensions based on the biplot drawn after PCA on the standardized human data.**
+
+The 1rst principal component (PC1) captures 53.66 % of the total variation in the data. The 2nd uncorrelated principal component (PC2) is orthogonal to the first and captures 16.2% of the total variation in the data.
+
+*Correlations between features*
+
+1. As the angle between Mat.Mor and Ado.Birth is small, there is high positive correlation between these variables.
+2. As the angle between Life.Exp, GNI, Edu.Exp, and Edu2.F are small, there are high positive correlations between these variables.
+3. As the angle between Labo.F and Parli.F is quite small, there are quite high positive correlations between these variables.
+
+*Correlations between features and PC*
+
+1. As the angle between Mat.Mor and Ado.Birth and the PC1 axis is small, these two features related to (contributed) the PC1 dimension.
+2. As the angle between Labo.F and Parli.F and the PC2 axis is small, these two features related to (contributed) the PC2 dimension.
+3. As the angles between Life.Exp, GNI, Edu.Exp, and Edu2.F and the PC1 are small but wrong directions, these features related to negatively (contributed) the PC1 dimension.
+
+Noted also that the lengths of the arrows are proportional to the standard deviations of the features.
+
+**6. Load the tea dataset from the package Factominer. Explore the data briefly: look at the structure and the dimensions of the data and visualize it. **
+
+```{r}
+library(FactoMineR)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+
+data(tea)
+
+# column names to keep in the dataset
+keep_columns <- c("Tea", "How", "how", "sugar", "where", "lunch")
+
+# select the 'keep_columns' to create a new dataset
+tea_time<-select(tea, one_of(keep_columns))
+
+# look at the summaries and structure of the data
+
+summary(tea_time)
+dim(tea_time)
+str(tea_time)
+
+# visualize the dataset
+
+gather(tea_time) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + geom_bar()+theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
+```
+
+**Then do Multiple Correspondence Analysis on the tea data.**
+
+```{r}
+# tea_time is available
+
+# multiple correspondence analysis
+mca <- MCA(tea_time, graph = FALSE)
+
+# summary of the model
+summary(mca)
+
+```
+
+**Interpret the results of the MCA**
+
+First, the eigenvalues presented the variances and the percentage of variances retained by each dimension. As you can see variance is reduced in each dimension.
+
+
+Regarding relationships between categorical variables and dimension, there were quite strong link with the variables how and where and the dimension1; the values are close to one (.708 and .702). However, there are also quite high link between these variables (how and where) and dimension2 (.522 and .681). So, these two variables seem to related to dimension1 and dimension2. Furthermore, there were also weak link between variables Tea, How, and sugar and dimension 3.
+
+
+**Draw at least the variable biplot of the analysis. You can also explore other plotting options for MCA. **
+```{r}
+# visualize MCA
+plot(mca, invisible=c("ind"), habillage = "quali")
+
+plot(mca, invisible=c("var"), habillage = "quali")
+
+
+```
+
+**Comment on the output of the plots.**
+
+On the above we have MCA factor map (biplot), where are variables drawn on the first two dimensions.
+The distance between variable categories gives a measure of their similarity. 
+
+In the individuals biplot, for example, unpackaged and tea shop are quite similar but different from other categories presenting more dimension 1. Also chain store + teashop and tea back + unpackaged are quite similar and different from others presenting more dimension 2. Other variables are quite close to other in middle of the graph presenting both dimensions. Variable green is quite different from all other categories. 
+
+In the variables bibplot, you can see that the observations are mainly located in the three areas.
+
+ 
